@@ -18,7 +18,7 @@ input:focus{border-color:#FF9900;}button{padding:8px 14px;background:#FF9900;col
 <div class="card" id="msgs"><div class="empty">Loading...</div></div>
 </div>
 <script>
-var API=window.location.protocol+'//'+window.location.hostname+':3001';
+var API=window.location.protocol+'//'+window.location.hostname+':3002';
 function load(){fetch(API+'/api/messages').then(function(r){return r.json();}).then(function(data){
   var el=document.getElementById('msgs');
   if(!data.length){el.innerHTML='<div class="empty">No messages yet!</div>';return;}
