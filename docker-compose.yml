@@ -1,0 +1,43 @@
+services:
+  db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-flashtest}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASS:-password}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      PORT: 3001
+      DB_HOST: db
+      DB_NAME: ${DB_NAME:-flashtest}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASS: ${DB_PASS:-password}
+      APP_NAME: ${APP_NAME:-FlashTest App}
+    ports:
+      - "3001:3001"
+    depends_on:
+      db:
+        condition: service_healthy
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8090:80"
+    depends_on:
+      - backend
+volumes:
+  pgdata:

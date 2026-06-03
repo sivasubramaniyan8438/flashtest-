@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>FlashTest</title>
+<style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:sans-serif;background:#0f1b2d;color:#d1dce8;display:flex;align-items:center;justify-content:center;min-height:100vh;}
+.c{width:500px;padding:20px;}h1{color:#FF9900;margin-bottom:4px;}
+.sub{color:#4a6a88;font-size:12px;margin-bottom:14px;}
+.card{background:#161e2d;border:1px solid #2d4a6a;border-radius:6px;padding:14px;margin-bottom:10px;}
+.row{display:flex;gap:8px;}input{flex:1;padding:8px;border-radius:4px;border:1px solid #2d4a6a;background:#0f1b2d;color:#d1dce8;outline:none;}
+input:focus{border-color:#FF9900;}button{padding:8px 14px;background:#FF9900;color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:600;}
+.msg{padding:8px;border-bottom:1px solid #1a2d45;font-size:13px;}.msg:last-child{border-bottom:none;}
+.time{font-size:10px;color:#4a6a88;}.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;margin-bottom:12px;}
+.ok{background:#0d3322;color:#3dba7a;border:1px solid #1a5e3a;}.err{background:#2d0f0f;color:#e05252;border:1px solid #5e1a1a;}
+.loading{background:#1a2a0a;color:#FF9900;border:1px solid #664000;}.empty{color:#4a6a88;font-size:12px;padding:16px;text-align:center;}</style>
+</head><body><div class="c">
+<h1>⚡ FlashTest App</h1>
+<div class="sub">FlashDeploy — Frontend + Backend + PostgreSQL</div>
+<div class="badge loading" id="status">Connecting...</div>
+<div class="card"><div class="row"><input type="text" id="inp" placeholder="Type a message..."/><button onclick="send()">Send</button></div></div>
+<div class="card" id="msgs"><div class="empty">Loading...</div></div>
+</div>
+<script>
+var API=window.location.protocol+'//'+window.location.hostname+':3001';
+function load(){fetch(API+'/api/messages').then(function(r){return r.json();}).then(function(data){
+  var el=document.getElementById('msgs');
+  if(!data.length){el.innerHTML='<div class="empty">No messages yet!</div>';return;}
+  el.innerHTML=data.map(function(m){return'<div class="msg"><div>'+m.text+'</div><div class="time">'+new Date(m.created_at).toLocaleString()+'</div></div>';}).join('');
+}).catch(function(){document.getElementById('msgs').innerHTML='<div class="empty">Backend offline</div>';});}
+function send(){var i=document.getElementById('inp');if(!i.value.trim())return;
+fetch(API+'/api/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:i.value})}).then(function(){i.value='';load();});}
+document.getElementById('inp').onkeydown=function(e){if(e.key==='Enter')send();};
+fetch(API+'/health').then(function(r){return r.json();}).then(function(d){var el=document.getElementById('status');el.textContent='✅ '+d.app;el.className='badge ok';}).catch(function(){var el=document.getElementById('status');el.textContent='❌ Backend offline';el.className='badge err';});
+load();setInterval(load,5000);
+</script></body></html>
